@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Harvest — Marketing Intelligence Dashboards</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: #080a0f; color: #e8edf5; font-family: 'DM Sans', sans-serif; font-weight: 300; overflow-x: hidden; }
+a { text-decoration: none; }
+
+nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 18px 60px; background: #080a0f; border-bottom: 1px solid rgba(0,255,136,0.15); }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #e8edf5; }
+.logo span { color: #00ff88; }
+.nav-links { display: flex; align-items: center; gap: 36px; }
+.nav-links a { color: #7a8499; font-size: 14px; transition: color 0.2s; }
+.nav-links a:hover { color: #00ff88; }
+.nav-cta { background: #00ff88 !important; color: #080a0f !important; padding: 10px 22px; border-radius: 4px; font-weight: 500 !important; }
+.nav-cta:hover { background: #00cc6e !important; }
+
+.hero { padding: 100px 60px 80px; text-align: center; display: flex; flex-direction: column; align-items: center; background: radial-gradient(ellipse at 50% 0%, rgba(0,255,136,0.07) 0%, transparent 60%); }
+.badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.25); color: #00ff88; font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; padding: 7px 18px; border-radius: 100px; margin-bottom: 32px; }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(40px, 6vw, 80px); line-height: 1.0; letter-spacing: -2px; margin-bottom: 24px; }
+.g { color: #00ff88; }
+.c { color: #00e5ff; }
+.hero p { font-size: 18px; color: #7a8499; max-width: 540px; line-height: 1.7; margin-bottom: 40px; }
+.btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 70px; }
+.btn-p { background: #00ff88; color: #080a0f; padding: 15px 34px; border-radius: 4px; font-weight: 500; font-size: 15px; box-shadow: 0 0 28px rgba(0,255,136,0.25); transition: all 0.2s; }
+.btn-p:hover { background: #00cc6e; transform: translateY(-2px); }
+.btn-s { background: transparent; color: #e8edf5; padding: 15px 34px; border-radius: 4px; font-size: 15px; border: 1px solid rgba(255,255,255,0.15); transition: all 0.2s; }
+.btn-s:hover { border-color: rgba(255,255,255,0.35); transform: translateY(-2px); }
+
+/* MOCKUP */
+.mockup-wrap { width: 100%; max-width: 960px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,136,0.2); box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+.mbar { background: #0d1117; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 11px 18px; display: flex; align-items: center; gap: 10px; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.r { background: #ff5f57; } .y { background: #febc2e; } .gr { background: #28c840; }
+.url { background: rgba(255,255,255,0.05); border-radius: 4px; padding: 5px 14px; font-size: 12px; color: #7a8499; flex: 1; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.04em; }
+.mbody { background: #0d1117; padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mc { background: #111620; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 14px; }
+.mc.w2 { grid-column: span 2; }
+.ml { font-family: 'Rajdhani', sans-serif; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #7a8499; margin-bottom: 6px; }
+.mv { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: #00ff88; }
+.mv.cyan { color: #00e5ff; }
+.mv.wh { color: #e8edf5; font-size: 18px; }
+.ms { font-size: 11px; color: #7a8499; margin-top: 3px; }
+.bars { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.brow { display: flex; align-items: center; gap: 8px; }
+.blabel { font-size: 10px; color: #7a8499; width: 55px; }
+.btrack { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.bfill { height: 100%; border-radius: 2px; }
+.bg { background: #00ff88; }
+.bc { background: #00e5ff; }
+.chart { margin-top: 8px; display: flex; align-items: flex-end; gap: 4px; height: 44px; }
+.cb { flex: 1; border-radius: 2px 2px 0 0; opacity: 0.85; }
+
+.divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.2), transparent); }
+
+section { padding: 90px 60px; max-width: 1160px; margin: 0 auto; }
+.slabel { font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #00ff88; margin-bottom: 14px; }
+h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(30px, 4vw, 50px); letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 18px; }
+.ssub { font-size: 17px; color: #7a8499; max-width: 500px; line-height: 1.7; margin-bottom: 50px; }
+
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,255,136,0.12); }
+.pi { background: #0d1117; padding: 34px 28px; transition: background 0.2s; }
+.pi:hover { background: #111620; }
+.picon { font-size: 26px; margin-bottom: 14px; }
+.ptitle { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+.pdesc { font-size: 14px; color: #7a8499; line-height: 1.6; }
+
+.fgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.fc { background: #0d1117; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 32px; transition: all 0.3s; position: relative; overflow: hidden; }
+.fc::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #00ff88, #00e5ff); opacity: 0; transition: opacity 0.3s; }
+.fc:hover { border-color: rgba(0,255,136,0.2); transform: translateY(-3px); }
+.fc:hover::after { opacity: 1; }
+.ficon { width: 46px; height: 46px; border-radius: 10px; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.18); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 18px; }
+.ftitle { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 8px; }
+.fdesc { font-size: 14px; color: #7a8499; line-height: 1.7; }
+
+.agrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.ac { background: #0d1117; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 36px; transition: all 0.3s; }
+.ac:hover { border-color: rgba(0,229,255,0.22); transform: translateY(-3px); }
+.atag { display: inline-block; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); color: #00e5ff; font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; padding: 5px 13px; border-radius: 100px; margin-bottom: 18px; }
+.atitle { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; margin-bottom: 10px; }
+.adesc { font-size: 14px; color: #7a8499; line-height: 1.7; margin-bottom: 18px; }
+.alist { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.alist li { font-size: 14px; color: #7a8499; display: flex; align-items: center; gap: 9px; }
+.alist li::before { content: '→'; color: #00ff88; font-size: 12px; flex-shrink: 0; }
+
+.cta-wrap { padding: 80px 40px; text-align: center; background: radial-gradient(ellipse at center, rgba(0,255,136,0.05) 0%, transparent 65%); }
+.cta-box { border: 1px solid rgba(0,255,136,0.15); border-radius: 18px; padding: 70px 50px; max-width: 660px; margin: 0 auto; background: #0d1117; }
+.cta-box h2 { margin-bottom: 14px; }
+.cta-box p { color: #7a8499; font-size: 16px; line-height: 1.7; margin-bottom: 36px; }
+.crow { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.cinput { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 13px 18px; color: #e8edf5; font-family: 'DM Sans', sans-serif; font-size: 15px; width: 260px; outline: none; transition: border-color 0.2s; }
+.cinput:focus { border-color: #00ff88; }
+.cinput::placeholder { color: #7a8499; }
+
+footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 36px 60px; display: flex; align-items: center; justify-content: space-between; }
+footer p { font-size: 13px; color: #7a8499; }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Neon<span>Harvest</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#collaboration">Team Tools</a>
+    <a href="#who">Who It's For</a>
+    <a href="#contact">Contact</a>
+    <a href="#contact" class="nav-cta">Get a Demo</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="badge"><div class="badge-dot"></div>Marketing Intelligence Platform</div>
+  <h1>Your Data.<br><span class="g">One Dashboard.</span><br><span class="c">Zero Guesswork.</span></h1>
+  <p>Custom-built performance dashboards that harvest your Google Ads, Bing, Analytics, and product data into one place — so your team always knows exactly what's working.</p>
+  <div class="btns">
+    <a href="#contact" class="btn-p">Request a Demo</a>
+    <a href="#features" class="btn-s">See What's Included</a>
+  </div>
+  <div class="mockup-wrap">
+    <div class="mbar">
+      <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot gr"></div></div>
+      <div class="url">neonharvest.io/dashboard/client-overview</div>
+    </div>
+    <div class="mbody">
+      <div class="mc"><div class="ml">Monthly Revenue</div><div class="mv">$84,210</div><div class="ms">↑ 12.4% vs last month</div></div>
+      <div class="mc"><div class="ml">Google Ads ROAS</div><div class="mv cyan">4.8x</div><div class="ms">↑ 0.6x vs last period</div></div>
+      <div class="mc"><div class="ml">Budget Pacing</div><div class="mv wh">68%</div><div class="ms">On track · 14 days left</div></div>
+      <div class="mc"><div class="ml">Feed Health</div><div class="mv">97%</div><div class="ms">Products approved</div></div>
+      <div class="mc w2">
+        <div class="ml">Traffic by Channel</div>
+        <div class="bars">
+          <div class="brow"><div class="blabel">Organic</div><div class="btrack"><div class="bfill bg" style="width:72%"></div></div></div>
+          <div class="brow"><div class="blabel">PPC</div><div class="btrack"><div class="bfill bc" style="width:54%"></div></div></div>
+          <div class="brow"><div class="blabel">Direct</div><div class="btrack"><div class="bfill bg" style="width:33%"></div></div></div>
+          <div class="brow"><div class="blabel">Referral</div><div class="btrack"><div class="bfill bc" style="width:18%"></div></div></div>
+        </div>
+      </div>
+      <div class="mc w2">
+        <div class="ml">Revenue Last 8 Months</div>
+        <div class="chart">
+          <div class="cb" style="height:45%;background:#00ff88"></div>
+          <div class="cb" style="height:55%;background:#00ff88"></div>
+          <div class="cb" style="height:40%;background:#00ff88"></div>
+          <div class="cb" style="height:65%;background:#00ff88"></div>
+          <div class="cb" style="height:70%;background:#00e5ff"></div>
+          <div class="cb" style="height:60%;background:#00e5ff"></div>
+          <div class="cb" style="height:80%;background:#00e5ff"></div>
+          <div class="cb" style="height:95%;background:#00ff88"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<section id="problem" class="reveal">
+  <div class="slabel">The Problem</div>
+  <h2>Your data is out there.<br>We can harvest it into one dashboard.</h2>
+  <p class="ssub">Your insights are scattered across five platforms, three tools, and spreadsheets nobody fully understands anymore. The data exists — it just hasn't been brought together.</p>
+  <div class="pgrid">
+    <div class="pi"><div class="picon">📊</div><div class="ptitle">Scattered Data Sources</div><div class="pdesc">Google Ads, Bing, GA4, Merchant Center — each lives in its own silo with no unified view.</div></div>
+    <div class="pi"><div class="picon">⏱️</div><div class="ptitle">Wasted Time on Reports</div><div class="pdesc">Hours every week pulling numbers manually and building decks that are outdated before they're sent.</div></div>
+    <div class="pi"><div class="picon">😕</div><div class="ptitle">Confused Clients</div><div class="pdesc">When reporting is hard to understand, clients lose confidence — even when the results are great.</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="features" class="reveal">
+  <div class="slabel">What You Get</div>
+  <h2>Every signal harvested,<br>built for your business.</h2>
+  <p class="ssub">Each dashboard is custom built to harvest your data sources, your team's workflow, and your clients' needs into one clean view.</p>
+  <div class="fgrid">
+    <div class="fc"><div class="ficon">⚡</div><div class="ftitle">Live API Integrations</div><div class="fdesc">Real-time data pulled directly from Google Ads, Google Analytics 4, Bing Ads, and Google Merchant Center. No manual exports, no stale data.</div></div>
+    <div class="fc"><div class="ficon">🎯</div><div class="ftitle">Budget & Pacing Alerts</div><div class="fdesc">Always know where your spend stands. Visual pacing indicators tell you when a campaign is over or under-spending before it becomes a problem.</div></div>
+    <div class="fc"><div class="ficon">📈</div><div class="ftitle">Performance Reporting</div><div class="fdesc">Clean, easy-to-read reports your clients will actually understand. ROAS, conversions, revenue, traffic by channel — all in one view.</div></div>
+    <div class="fc"><div class="ficon">💬</div><div class="ftitle">AI-Powered Daily Digests</div><div class="fdesc">Automated daily, weekly, and monthly summaries delivered straight to Slack or your team's chat — written in plain English so everyone walks in knowing exactly what needs attention.</div></div>
+    <div class="fc"><div class="ficon">🛠️</div><div class="ftitle">Custom Built for You</div><div class="fdesc">No one-size-fits-all templates. Every dashboard is designed around your specific data, your team's roles, and how you actually work.</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="collaboration" class="reveal">
+  <div class="slabel">Team Collaboration Built In</div>
+  <h2>Keep everyone on<br>the same page.</h2>
+  <p class="ssub">A custom-built work management platform integrated directly with your data. Tasks auto-create from campaign alerts, budget triggers, and performance drops — so your team is always working off live information, not last week's spreadsheet.</p>
+  <div class="fgrid">
+    <div class="fc"><div class="ficon">👥</div><div class="ftitle">Full Visibility Across Every Layer</div><div class="fdesc">See every task by client, department, or teammate in one view. Instantly spot who's behind, which department is bogged down, and where bottlenecks are forming — before they become problems.</div></div>
+    <div class="fc"><div class="ficon">⏰</div><div class="ftitle">Smart Reminders</div><div class="fdesc">Set reminders for campaign launches, budget reviews, reporting deadlines, and client check-ins. Never miss a deadline again.</div></div>
+    <div class="fc"><div class="ficon">🔗</div><div class="ftitle">Tasks Tied to the Right People</div><div class="fdesc">Every task is linked to a client, a department, and the team member responsible. No ambiguity about who owns what — just clear accountability across every project.</div></div>
+    <div class="fc"><div class="ficon">🔔</div><div class="ftitle">Slack Integration</div><div class="fdesc">Task updates, reminders, and team announcements flow straight to Slack. No context switching, no checking another app.</div></div>
+    <div class="fc"><div class="ficon">👔</div><div class="ftitle">Employee & Client Tasks</div><div class="fdesc">Assign tasks to team members, track client deliverables, and manage approvals all from one interface. Keep internal and external work together.</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="who" class="reveal">
+  <div class="slabel">Who It's For</div>
+  <h2>Built for agencies<br>and ecommerce teams.</h2>
+  <p class="ssub">If you're managing ad spend, tracking product performance, or reporting to clients — this was made for you.</p>
+  <div class="agrid">
+    <div class="ac">
+      <div class="atag">Marketing Agencies</div>
+      <div class="atitle">Manage every client from one screen</div>
+      <div class="adesc">Stop bouncing between platforms and cobbling together reports. See all your clients' performance in one organized dashboard.</div>
+      <ul class="alist">
+        <li>Multi-client overview in one place</li>
+        <li>Role-based views for your whole team</li>
+        <li>Client-ready reporting built in</li>
+        <li>Budget pacing across all accounts</li>
+      </ul>
+    </div>
+    <div class="ac">
+      <div class="atag">Ecommerce Businesses</div>
+      <div class="atitle">See your full store performance at a glance</div>
+      <div class="adesc">From product feed health to ad spend to revenue by channel — everything you need to make fast, confident decisions.</div>
+      <ul class="alist">
+        <li>Google Merchant Center feed health</li>
+        <li>Revenue by channel (PPC, Organic, Direct)</li>
+        <li>Ad performance vs. store revenue</li>
+        <li>Product-level insights and alerts</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<div class="cta-wrap" id="contact">
+  <div class="cta-box reveal">
+    <div class="slabel" style="text-align:center">Get Started</div>
+    <h2>Ready to see it<br>in action?</h2>
+    <p>Drop your email and I'll reach out to set up a personalized demo — no pressure, just a look at what we can harvest from your data.</p>
+    <div class="crow">
+      <input class="cinput" type="email" placeholder="your@email.com" />
+      <a href="mailto:cfebo2@gmail.com" class="btn-p">Request Demo</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="logo">Neon<span>Harvest</span></div>
+  <p>© 2026 Neon Harvest · cfebo2@gmail.com</p>
+</footer>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
