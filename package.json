@@ -1,0 +1,11 @@
+{
+  "name": "neon-harvest",
+  "version": "1.0.0",
+  "description": "Neon Harvest marketing site",
+  "scripts": {
+    "start": "serve . -l $PORT"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
+  }
+}
