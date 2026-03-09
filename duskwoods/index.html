@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DuskWoods — Handcrafted Woodwork</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --dusk: #1a1520;
+    --twilight: #2a2035;
+    --bark: #3d2e1f;
+    --amber: #c9944a;
+    --moss: #5a7247;
+    --fog: #b8b0c0;
+    --moonlight: #e8e2ee;
+    --glow: #e8a84c;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--dusk);
+    color: var(--moonlight);
+    overflow-x: hidden;
+  }
+
+  /* ── PASSWORD GATE ── */
+  .pw-gate {
+    position:fixed; inset:0; z-index:9999;
+    background:var(--dusk);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    transition: opacity .6s, visibility .6s;
+  }
+  .pw-gate.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+  .pw-gate-logo {
+    font-family:'Cormorant Garamond', serif;
+    font-size:2.4rem; font-weight:300; letter-spacing:.35em;
+    color:var(--moonlight); text-transform:lowercase;
+    margin-bottom:.5rem;
+  }
+  .pw-gate-logo span { color:var(--amber); }
+  .pw-gate-sub {
+    font-size:.8rem; color:var(--fog); font-weight:300;
+    letter-spacing:.15em; margin-bottom:2.5rem;
+  }
+  .pw-form {
+    display:flex; gap:.8rem; align-items:center;
+    flex-wrap:wrap; justify-content:center;
+  }
+  .pw-input {
+    background:transparent; border:1px solid rgba(184,176,192,.2);
+    padding:.8rem 1.2rem; color:var(--moonlight);
+    font-family:'Inter',sans-serif; font-size:.9rem;
+    letter-spacing:.08em; outline:none; width:240px;
+    transition: border-color .3s;
+  }
+  .pw-input::placeholder { color:rgba(184,176,192,.3); }
+  .pw-input:focus { border-color:var(--amber); }
+  .pw-btn {
+    padding:.8rem 1.8rem; border:1px solid var(--amber);
+    background:transparent; color:var(--amber);
+    font-family:'Inter',sans-serif; font-size:.75rem;
+    font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+    cursor:pointer; transition:all .3s;
+  }
+  .pw-btn:hover { background:var(--amber); color:var(--dusk); }
+  .pw-error {
+    margin-top:1rem; font-size:.8rem; color:#c0534f;
+    letter-spacing:.05em; min-height:1.2em;
+  }
+  @media(max-width:480px) {
+    .pw-input { width:200px; }
+    .pw-gate-logo { font-size:1.8rem; }
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 4%;
+    background: linear-gradient(180deg, rgba(26,21,32,.95) 0%, transparent 100%);
+    backdrop-filter: blur(8px);
+    transition: background .4s;
+  }
+  nav.scrolled { background: rgba(26,21,32,.97); }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem; font-weight: 300; letter-spacing: .35em;
+    color: var(--moonlight); text-transform: lowercase;
+  }
+  .nav-logo span { color: var(--amber); }
+  .nav-links { display:flex; gap:2.5rem; list-style:none; }
+  .nav-links a {
+    color: var(--fog); text-decoration:none; font-size:.85rem;
+    font-weight:300; letter-spacing:.12em; text-transform:uppercase;
+    transition: color .3s;
+  }
+  .nav-links a:hover { color: var(--amber); }
+
+  .mobile-toggle { display:none; background:none; border:none; cursor:pointer; }
+  .mobile-toggle span { display:block; width:24px; height:2px; background:var(--moonlight); margin:5px 0; transition:.3s; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; height: 100vh; min-height:600px;
+    display: flex; align-items:center; justify-content:center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position:absolute; inset:0;
+    background: url('photos/IMG_20160304_183608.jpg') center/cover;
+  }
+  .hero-bg::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(
+      180deg,
+      rgba(26,21,32,.75) 0%,
+      rgba(26,21,32,.65) 40%,
+      rgba(26,21,32,.85) 80%,
+      rgba(26,21,32,1) 100%
+    );
+  }
+  .hero-content {
+    position:relative; z-index:2; text-align:center;
+    max-width:700px; padding:0 2rem;
+  }
+  .hero-content img {
+    width: 340px; max-width:90%; margin-bottom:1.5rem;
+    filter: brightness(1.2) drop-shadow(0 0 40px rgba(232,168,76,.15));
+  }
+  .hero-tagline {
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight:300; font-style:italic;
+    color: var(--fog); letter-spacing:.08em;
+    margin-bottom:2.5rem;
+  }
+  .hero-cta {
+    display:inline-block; padding:.9rem 2.8rem;
+    border:1px solid var(--amber); color:var(--amber);
+    font-size:.8rem; font-weight:500; letter-spacing:.18em;
+    text-transform:uppercase; text-decoration:none;
+    transition: all .4s;
+  }
+  .hero-cta:hover {
+    background:var(--amber); color:var(--dusk);
+  }
+  .scroll-hint {
+    position:absolute; bottom:2.5rem; left:50%; transform:translateX(-50%);
+    z-index:2;
+    animation: drift 2s ease-in-out infinite;
+  }
+  .scroll-hint span {
+    display:block; width:20px; height:32px; border:1.5px solid var(--fog);
+    border-radius:12px; position:relative;
+  }
+  .scroll-hint span::after {
+    content:''; position:absolute; top:6px; left:50%; transform:translateX(-50%);
+    width:3px; height:8px; background:var(--amber); border-radius:2px;
+    animation: scrollDot 2s ease-in-out infinite;
+  }
+  @keyframes drift { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+  @keyframes scrollDot { 0%{opacity:1;top:6px} 100%{opacity:0;top:18px} }
+
+  /* ── SECTION BASE ── */
+  section { padding: 7rem 4%; }
+  .section-label {
+    font-size:.7rem; font-weight:500; letter-spacing:.3em;
+    text-transform:uppercase; color:var(--amber);
+    margin-bottom:.8rem;
+  }
+  .section-title {
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight:300; color:var(--moonlight);
+    margin-bottom:1rem; line-height:1.2;
+  }
+  .section-desc {
+    font-weight:300; color:var(--fog); max-width:560px;
+    line-height:1.8; font-size:.95rem;
+    margin-bottom:3rem;
+  }
+
+  /* ── ABOUT ── */
+  .about {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:4rem; align-items:center;
+    max-width:1200px; margin:0 auto;
+  }
+  .about-images {
+    display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+  }
+  .about-images img {
+    width:100%; height:220px; object-fit:cover;
+    filter: brightness(.85) saturate(.9);
+    transition: all .5s;
+  }
+  .about-images img:hover { filter:brightness(1) saturate(1); transform:scale(1.02); }
+  .about-images img:first-child { grid-row:span 2; height:100%; }
+
+  /* ── PRODUCTS ── */
+  .products { background: var(--twilight); }
+  .products-header { text-align:center; margin-bottom:4rem; }
+  .products-header .section-desc { margin:0 auto; margin-bottom:3rem; }
+  .product-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr));
+    gap:2rem; max-width:1200px; margin:0 auto;
+  }
+  .product-card {
+    position:relative; overflow:hidden;
+    background:var(--dusk); border:1px solid rgba(184,176,192,.08);
+    transition: transform .4s, border-color .4s;
+  }
+  .product-card:hover { transform:translateY(-4px); border-color:var(--amber); }
+  .product-card img {
+    width:100%; height:280px; object-fit:cover;
+    filter:brightness(.8); transition:filter .4s;
+  }
+  .product-card:hover img { filter:brightness(.95); }
+  .product-info {
+    padding:1.5rem;
+  }
+  .product-info h3 {
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.4rem; font-weight:400; margin-bottom:.5rem;
+  }
+  .product-info p {
+    font-size:.85rem; color:var(--fog); font-weight:300; line-height:1.7;
+  }
+
+  /* ── FEATURED (full-width image break) ── */
+  .featured {
+    position:relative; height:60vh; min-height:400px;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .featured-bg {
+    position:absolute; inset:0;
+    background: url('photos/Lackie-690-1.jpg') center/cover;
+  }
+  .featured-bg::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(
+      135deg,
+      rgba(26,21,32,.85) 0%,
+      rgba(26,21,32,.4) 50%,
+      rgba(26,21,32,.85) 100%
+    );
+  }
+  .featured-content {
+    position:relative; z-index:2; text-align:center;
+    max-width:600px; padding:0 2rem;
+  }
+  .featured-quote {
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    font-weight:300; font-style:italic;
+    color:var(--moonlight); line-height:1.5;
+    margin-bottom:1rem;
+  }
+  .featured-attr {
+    font-size:.8rem; color:var(--amber); letter-spacing:.15em;
+  }
+
+  /* ── CLASSES ── */
+  .classes { max-width:1200px; margin:0 auto; }
+  .classes-grid {
+    display:grid; grid-template-columns:1.2fr 1fr; gap:3rem;
+    align-items:start;
+  }
+  .class-image-stack {
+    display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+  }
+  .class-image-stack img {
+    width:100%; height:240px; object-fit:cover;
+    filter:brightness(.85); transition:all .5s;
+  }
+  .class-image-stack img:hover { filter:brightness(1); }
+  .class-image-stack img:nth-child(1) { grid-column:span 2; height:300px; }
+  .class-list { list-style:none; }
+  .class-item {
+    padding:1.5rem 0;
+    border-bottom:1px solid rgba(184,176,192,.1);
+  }
+  .class-item h3 {
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.3rem; font-weight:400; margin-bottom:.4rem;
+  }
+  .class-item p {
+    font-size:.85rem; color:var(--fog); font-weight:300; line-height:1.7;
+  }
+  .class-tag {
+    display:inline-block; margin-top:.6rem;
+    padding:.3rem .8rem; font-size:.7rem;
+    border:1px solid var(--moss); color:var(--moss);
+    letter-spacing:.1em; text-transform:uppercase;
+  }
+
+  /* ── NEWS ── */
+  .news { background:var(--twilight); }
+  .news-header { text-align:center; margin-bottom:4rem; }
+  .news-header .section-desc { margin:0 auto; }
+  .news-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr));
+    gap:2rem; max-width:1200px; margin:0 auto;
+  }
+  .news-card {
+    background:var(--dusk); border:1px solid rgba(184,176,192,.06);
+    overflow:hidden; transition:transform .4s, border-color .4s;
+  }
+  .news-card:hover { transform:translateY(-4px); border-color:rgba(184,176,192,.15); }
+  .news-card img {
+    width:100%; height:220px; object-fit:cover;
+    filter:brightness(.8); transition:filter .4s;
+  }
+  .news-card:hover img { filter:brightness(.95); }
+  .news-body { padding:1.5rem; }
+  .news-date {
+    font-size:.7rem; color:var(--amber); letter-spacing:.15em;
+    text-transform:uppercase; margin-bottom:.6rem;
+  }
+  .news-body h3 {
+    font-family:'Cormorant Garamond', serif;
+    font-size:1.3rem; font-weight:400; margin-bottom:.6rem;
+  }
+  .news-body p {
+    font-size:.85rem; color:var(--fog); font-weight:300; line-height:1.7;
+  }
+
+  /* ── GALLERY STRIP ── */
+  .gallery-strip {
+    padding:5rem 0;
+    overflow:hidden;
+  }
+  .gallery-strip-title {
+    text-align:center; margin-bottom:2.5rem;
+  }
+  .gallery-track {
+    display:flex; gap:1rem;
+    animation: slideGallery 30s linear infinite;
+  }
+  .gallery-track img {
+    width:280px; height:200px; object-fit:cover; flex-shrink:0;
+    filter:brightness(.75) saturate(.85);
+    transition: filter .4s;
+  }
+  .gallery-track img:hover { filter:brightness(1) saturate(1); }
+  @keyframes slideGallery {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── CONTACT / FOOTER ── */
+  footer {
+    padding:5rem 4% 2rem;
+    text-align:center;
+    border-top:1px solid rgba(184,176,192,.08);
+  }
+  .footer-logo {
+    font-family:'Cormorant Garamond', serif;
+    font-size:2rem; font-weight:300; letter-spacing:.35em;
+    color:var(--moonlight); text-transform:lowercase;
+    margin-bottom:1rem;
+  }
+  .footer-logo span { color:var(--amber); }
+  .footer-links {
+    display:flex; justify-content:center; gap:2rem;
+    list-style:none; margin-bottom:2rem;
+  }
+  .footer-links a {
+    color:var(--fog); text-decoration:none; font-size:.8rem;
+    letter-spacing:.1em; transition:color .3s;
+  }
+  .footer-links a:hover { color:var(--amber); }
+  .footer-copy {
+    font-size:.75rem; color:rgba(184,176,192,.4);
+    letter-spacing:.05em;
+  }
+
+  /* ── FADE-IN ANIMATIONS ── */
+  .fade-up {
+    opacity:0; transform:translateY(30px);
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:768px) {
+    .nav-links { display:none; }
+    .mobile-toggle { display:block; }
+    nav.open .nav-links {
+      display:flex; flex-direction:column;
+      position:absolute; top:100%; left:0; right:0;
+      background:var(--dusk); padding:2rem 4%; gap:1.5rem;
+    }
+    .hero { min-height:100svh; }
+    .hero-content img { width:240px; }
+    .hero-tagline { font-size:1rem; margin-bottom:2rem; }
+    .hero-cta { padding:.75rem 2rem; font-size:.75rem; }
+    .about { grid-template-columns:1fr; gap:2rem; }
+    .about-images { grid-template-columns:1fr 1fr; }
+    .about-images img { height:160px; }
+    .about-images img:first-child { grid-row:auto; height:160px; }
+    .classes-grid { grid-template-columns:1fr; }
+    .class-image-stack img { height:180px; }
+    .class-image-stack img:nth-child(1) { height:220px; }
+    .product-grid { grid-template-columns:1fr; }
+    .product-card img { height:220px; }
+    .news-grid { grid-template-columns:1fr; }
+    .news-card img { height:180px; }
+    section { padding:4rem 5%; }
+    .section-title { font-size:1.8rem; }
+    .section-desc { font-size:.88rem; line-height:1.7; }
+    .featured { height:45vh; min-height:300px; }
+    .featured-quote { font-size:1.2rem; }
+    .gallery-track img { width:200px; height:150px; }
+    .footer-links { gap:1rem; flex-wrap:wrap; }
+    .footer-logo { font-size:1.5rem; }
+  }
+  @media(max-width:380px) {
+    .hero-content img { width:190px; }
+    .product-card img { height:180px; }
+    section { padding:3rem 4%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="pw-gate" id="pwGate">
+  <div class="pw-gate-logo">dusk<span>woods</span></div>
+  <p class="pw-gate-sub">Enter password to continue</p>
+  <div class="pw-form">
+    <input class="pw-input" type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <button class="pw-btn" id="pwBtn">Enter</button>
+  </div>
+  <p class="pw-error" id="pwError"></p>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">dusk<span>woods</span></div>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#classes">Classes</a></li>
+    <li><a href="#news">News</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="mobile-toggle" onclick="document.getElementById('nav').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content fade-up">
+    <img src="photos/Untitled(1).png" alt="DuskWoods">
+    <p class="hero-tagline">Handcrafted woodwork, shaped by nature, finished at dusk</p>
+    <a href="#products" class="hero-cta">Explore Our Work</a>
+  </div>
+  <div class="scroll-hint"><span></span></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about">
+    <div class="about-images fade-up">
+      <img src="photos/IMG_20210615_093739_463.jpg" alt="Timber joinery detail">
+      <img src="photos/wood.jpg" alt="Wood texture close-up">
+      <img src="photos/IMG_20170620_130841_927.jpg" alt="Timber frame pavilion">
+    </div>
+    <div class="fade-up">
+      <p class="section-label">Our Story</p>
+      <h2 class="section-title">Where the Forest Meets the Workshop</h2>
+      <p class="section-desc">
+        DuskWoods is a small-batch woodworking studio rooted in traditional craftsmanship. From timber-frame structures to heirloom furniture, every piece is built by hand using locally sourced hardwoods and time-honored joinery. We believe the best work happens when the light goes golden and the woods grow quiet.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products" class="products">
+  <div class="products-header fade-up">
+    <p class="section-label">Products</p>
+    <h2 class="section-title">Built to Last Generations</h2>
+    <p class="section-desc">Custom furniture, structures, and installations crafted from sustainably harvested wood with traditional mortise-and-tenon joinery.</p>
+  </div>
+  <div class="product-grid">
+    <div class="product-card fade-up">
+      <img src="photos/walnutcabinet.jpg" alt="Walnut Cabinet">
+      <div class="product-info">
+        <h3>Custom Cabinetry</h3>
+        <p>Handcrafted cabinets in walnut, cherry, and reclaimed wood. Each piece designed for your space, built to become an heirloom.</p>
+      </div>
+    </div>
+    <div class="product-card fade-up">
+      <img src="photos/doors.jpg" alt="Barn Doors">
+      <div class="product-info">
+        <h3>Barn Doors & Entryways</h3>
+        <p>Solid wood barn doors and custom entryways built from reclaimed heart pine and hand-forged hardware.</p>
+      </div>
+    </div>
+    <div class="product-card fade-up">
+      <img src="photos/barn2.jpg" alt="Timber Structures">
+      <div class="product-info">
+        <h3>Timber Structures</h3>
+        <p>Post-and-beam barns, sheds, and outbuildings with hand-cut joinery and traditional timber-framing techniques.</p>
+      </div>
+    </div>
+    <div class="product-card fade-up">
+      <img src="photos/Screenshot_20210803-163816.jpg" alt="Kitchen Cabinets">
+      <div class="product-info">
+        <h3>Kitchen & Built-Ins</h3>
+        <p>Full kitchen cabinetry with natural wood panels, brick-compatible range hoods, and built-in storage solutions.</p>
+      </div>
+    </div>
+    <div class="product-card fade-up">
+      <img src="photos/IMG_20160304_183608.jpg" alt="Wooden Lanterns">
+      <div class="product-info">
+        <h3>Artisan Lanterns</h3>
+        <p>Geometric wooden lanterns hand-carved from solid blocks, designed to cast warm, intricate shadow patterns.</p>
+      </div>
+    </div>
+    <div class="product-card fade-up">
+      <img src="photos/IMG_20190916_112559_320.jpg" alt="Commercial Builds">
+      <div class="product-info">
+        <h3>Commercial Installations</h3>
+        <p>Custom reception desks, cubby benches, and branded signage for studios, gyms, and storefronts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED BREAK -->
+<div class="featured">
+  <div class="featured-bg"></div>
+  <div class="featured-content fade-up">
+    <p class="featured-quote">"Every joint tells the story of patience. Every grain remembers the forest."</p>
+    <p class="featured-attr">— DuskWoods Studio</p>
+  </div>
+</div>
+
+<!-- CLASSES -->
+<section id="classes" class="classes">
+  <div class="classes-grid">
+    <div class="class-image-stack fade-up">
+      <img src="photos/chuppah_full.jpg" alt="Wedding chuppah">
+      <img src="photos/chuppah_detail.jpg" alt="Chuppah floral detail">
+      <img src="photos/IMG_20210524_114731_548.jpg" alt="Custom furniture detail">
+    </div>
+    <div class="fade-up">
+      <p class="section-label">Classes & Workshops</p>
+      <h2 class="section-title">Learn the Craft</h2>
+      <p class="section-desc">Hands-on workshops in our woodland studio. Small groups, real tools, and projects you take home.</p>
+      <ul class="class-list">
+        <li class="class-item">
+          <h3>Intro to Joinery</h3>
+          <p>Learn mortise-and-tenon, dovetail, and lap joints using hand tools. Build a small keepsake box to take home.</p>
+          <span class="class-tag">Beginner</span>
+        </li>
+        <li class="class-item">
+          <h3>Timber Frame Basics</h3>
+          <p>Cut, fit, and raise a small timber-frame structure. Understand layout, scribing, and traditional pegged joinery.</p>
+          <span class="class-tag">Intermediate</span>
+        </li>
+        <li class="class-item">
+          <h3>Wedding Arbor Build</h3>
+          <p>Design and build a custom wedding chuppah or arbor. Perfect for couples who want a meaningful, handmade ceremony piece.</p>
+          <span class="class-tag">All Levels</span>
+        </li>
+        <li class="class-item">
+          <h3>Furniture Finishing</h3>
+          <p>Oil, wax, milk paint, and hand-rubbed finishes. Learn to protect and enhance the natural beauty of wood.</p>
+          <span class="class-tag">All Levels</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- NEWS -->
+<section id="news" class="news">
+  <div class="news-header fade-up">
+    <p class="section-label">News</p>
+    <h2 class="section-title">From the Workshop</h2>
+    <p class="section-desc">Updates, project stories, and what's happening at DuskWoods.</p>
+  </div>
+  <div class="news-grid">
+    <div class="news-card fade-up">
+      <img src="photos/IMG_20190701_125353_661.jpg" alt="Wedding arbor by lake">
+      <div class="news-body">
+        <p class="news-date">February 2026</p>
+        <h3>Spring Wedding Season Bookings Open</h3>
+        <p>Custom arbors, chuppahs, and ceremony arches now booking for spring and summer. Each piece built to your vision and delivered ready for the big day.</p>
+      </div>
+    </div>
+    <div class="news-card fade-up">
+      <img src="photos/20210811_090816.jpg" alt="Barn door hardware">
+      <div class="news-body">
+        <p class="news-date">January 2026</p>
+        <h3>New Barn Door Collection</h3>
+        <p>We've expanded our barn door line with new reclaimed wood options and hand-forged strap hinges made locally by our blacksmith partners.</p>
+      </div>
+    </div>
+    <div class="news-card fade-up">
+      <img src="photos/IMG_20190917_142344_044.jpg" alt="Storage bench">
+      <div class="news-body">
+        <p class="news-date">December 2025</p>
+        <h3>Commercial Project: Wellness Studio Build</h3>
+        <p>Custom reception desk, cubby bench, and branded wall art for a local wellness studio. Proud to bring warmth to modern spaces.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY STRIP -->
+<section id="gallery" class="gallery-strip">
+  <div class="gallery-strip-title fade-up">
+    <p class="section-label">Gallery</p>
+    <h2 class="section-title">A Walk Through Our Work</h2>
+  </div>
+  <div class="gallery-track">
+    <img src="photos/IMG_20160304_183608.jpg" alt="">
+    <img src="photos/lanterns.jpg" alt="">
+    <img src="photos/barn2.jpg" alt="">
+    <img src="photos/chuppah_full.jpg" alt="">
+    <img src="photos/walnutcabinet.jpg" alt="">
+    <img src="photos/doors.jpg" alt="">
+    <img src="photos/wood.jpg" alt="">
+    <img src="photos/IMG_20170620_130841_927.jpg" alt="">
+    <img src="photos/20190917_225444.jpg" alt="">
+    <img src="photos/Lackie-690-1.jpg" alt="">
+    <img src="photos/IMG_20210524_114731_548.jpg" alt="">
+    <img src="photos/IMG_20190916_112559_320.jpg" alt="">
+    <img src="photos/chuppah_detail.jpg" alt="">
+    <img src="photos/IMG_20190701_125353_661.jpg" alt="">
+    <img src="photos/20210811_090816.jpg" alt="">
+    <img src="photos/IMG_20210615_093739_463.jpg" alt="">
+    <img src="photos/Screenshot_20210803-163816.jpg" alt="">
+    <img src="photos/IMG_20190917_142344_044.jpg" alt="">
+    <!-- duplicate set for seamless loop -->
+    <img src="photos/IMG_20160304_183608.jpg" alt="">
+    <img src="photos/lanterns.jpg" alt="">
+    <img src="photos/barn2.jpg" alt="">
+    <img src="photos/chuppah_full.jpg" alt="">
+    <img src="photos/walnutcabinet.jpg" alt="">
+    <img src="photos/doors.jpg" alt="">
+    <img src="photos/wood.jpg" alt="">
+    <img src="photos/IMG_20170620_130841_927.jpg" alt="">
+    <img src="photos/20190917_225444.jpg" alt="">
+    <img src="photos/Lackie-690-1.jpg" alt="">
+    <img src="photos/IMG_20210524_114731_548.jpg" alt="">
+    <img src="photos/IMG_20190916_112559_320.jpg" alt="">
+    <img src="photos/chuppah_detail.jpg" alt="">
+    <img src="photos/IMG_20190701_125353_661.jpg" alt="">
+    <img src="photos/20210811_090816.jpg" alt="">
+    <img src="photos/IMG_20210615_093739_463.jpg" alt="">
+    <img src="photos/Screenshot_20210803-163816.jpg" alt="">
+    <img src="photos/IMG_20190917_142344_044.jpg" alt="">
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="footer-logo">dusk<span>woods</span></div>
+  <ul class="footer-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#classes">Classes</a></li>
+    <li><a href="#news">News</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+  </ul>
+  <p class="footer-copy">&copy; 2026 DuskWoods &middot; Handcrafted in the Woods</p>
+</footer>
+
+<script>
+// Password gate
+(function(){
+  const gate = document.getElementById('pwGate');
+  const inp = document.getElementById('pwInput');
+  const btn = document.getElementById('pwBtn');
+  const err = document.getElementById('pwError');
+  if(sessionStorage.getItem('dw_auth')==='1') { gate.classList.add('hidden'); }
+  else { document.body.style.overflow='hidden'; }
+  function check(){
+    if(inp.value.toLowerCase()==='hastings'){
+      sessionStorage.setItem('dw_auth','1');
+      gate.classList.add('hidden');
+      document.body.style.overflow='';
+    } else {
+      err.textContent='Incorrect password';
+      inp.value=''; inp.focus();
+    }
+  }
+  btn.addEventListener('click', check);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') check(); });
+})();
+
+// Scroll-triggered fade-in
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }});
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+});
+</script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/neon-harvest.html" }
+    { "source": "/", "destination": "/neon-harvest.html" },
+    { "source": "/duskwoods", "destination": "/duskwoods/index.html" }
   ]
 }
