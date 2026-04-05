@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Carry the Cross</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #000; width: 100%; height: 100%; overflow: hidden;
+    touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none;
+    user-select: none;
+  }
+  body { display: flex; justify-content: center; align-items: center; }
+
+  #phone-frame {
+    width: 100%; height: 100%;
+    max-width: 430px; max-height: 932px;
+    display: flex; flex-direction: column;
+    background: #000; position: relative;
+  }
+
+  /* Top HUD bar */
+  #top-bar {
+    flex-shrink: 0; height: 56px;
+    background: #0a0a0a; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid #222;
+  }
+  #top-bar .zone-label { color: #888; font-family: monospace; font-size: 12px; letter-spacing: 2px; }
+  #top-bar .faith-bar-wrap {
+    position: absolute; left: 15px; right: 15px; bottom: 8px; height: 4px;
+    background: #222; border-radius: 2px;
+  }
+  #top-bar .faith-bar-fill { height: 100%; border-radius: 2px; transition: width 0.1s; background: #44aa44; }
+  #top-bar .faith-bar-fill.mid { background: #aaaa44; }
+  #top-bar .faith-bar-fill.low { background: #aa4444; }
+  #top-bar .progress-wrap { position: absolute; right: 15px; top: 10px; }
+  #top-bar .progress-text { color: #666; font-family: monospace; font-size: 10px; }
+  #top-bar .score-text { color: #e8c860; font-family: monospace; font-size: 14px; font-weight: bold; }
+
+  /* Game canvas */
+  #game-area {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    min-height: 0; overflow: hidden; position: relative;
+  }
+  canvas {
+    display: block; image-rendering: pixelated; image-rendering: crisp-edges;
+    width: 100%; height: 100%; object-fit: contain;
+  }
+
+  /* Bottom bar — GO button zone */
+  #bottom-bar {
+    flex-shrink: 0; height: 44%;
+    background: #0a0a0a; position: relative;
+    border-top: 1px solid #222;
+    overflow: hidden;
+  }
+  #streak-text {
+    position: absolute; top: 8px; left: 0; right: 0;
+    color: #e8c860; font-family: monospace; font-size: 14px;
+    font-weight: bold; text-align: center; min-height: 20px; z-index: 2;
+  }
+  #timer-bar-wrap {
+    position: absolute; top: 30px; left: 20px; right: 20px;
+    height: 5px; background: #1a1a1a; border-radius: 3px; overflow: hidden; z-index: 2;
+  }
+  #timer-fill {
+    height: 100%; border-radius: 3px; transition: width 0.05s linear;
+    background: #4c4; width: 0%;
+  }
+  #timer-fill.warn { background: #cc4; }
+  #timer-fill.danger { background: #c44; }
+
+  /* The GO button */
+  #go-btn {
+    position: absolute; width: 90px; height: 90px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #5a5a7a, #2a2a3a);
+    border: 4px solid #777; color: #fff;
+    font-family: monospace; font-size: 32px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7), inset 0 2px 0 rgba(255,255,255,0.15);
+    cursor: pointer; z-index: 3;
+    transition: transform 0.06s;
+    left: 50%; top: 55%; transform: translate(-50%, -50%);
+  }
+  #go-btn:active, #go-btn.hit {
+    transform: translate(-50%, -50%) scale(0.88);
+    background: radial-gradient(circle at 35% 35%, #2a8a2a, #1a5a1a);
+    border-color: #4c4; color: #8f8;
+  }
+  #go-btn.miss {
+    background: radial-gradient(circle at 35% 35%, #8a2a2a, #5a1a1a);
+    border-color: #c44; color: #f88;
+  }
+  #go-btn.hidden { display: none; }
+
+  /* Start overlay */
+  #start-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #0a0a0a; z-index: 10; cursor: pointer;
+  }
+  #start-overlay.hidden { display: none; }
+  #start-overlay h1 { color: #e8c860; font-family: monospace; font-size: 32px; text-align: center; line-height: 1.3; }
+  #start-overlay .sub { color: #a08040; font-family: monospace; font-size: 14px; margin-top: 16px; }
+  #start-overlay .cross-icon { color: #3a1a0a; font-size: 80px; margin-bottom: 20px; }
+  #start-overlay .tap-start { color: #fff; font-family: monospace; font-size: 18px; font-weight: bold; margin-top: 50px; animation: blink 1s infinite; }
+  #start-overlay .instructions { color: #555; font-family: monospace; font-size: 12px; margin-top: 30px; text-align: center; line-height: 1.8; padding: 0 40px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  #danger-flash {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+    background: #ff0000; opacity: 0; pointer-events: none; transition: opacity 0.1s;
+  }
+</style>
+</head>
+<body>
+
+<div id="phone-frame">
+  <div id="top-bar">
+    <span class="zone-label" id="zone-label">JERUSALEM</span>
+    <div class="progress-wrap">
+      <span class="progress-text" id="progress-text"></span>
+      <span class="score-text" id="score-text" style="display:none"></span>
+    </div>
+    <div class="faith-bar-wrap">
+      <div class="faith-bar-fill" id="faith-fill" style="width:100%"></div>
+    </div>
+  </div>
+
+  <div id="game-area">
+    <canvas id="game"></canvas>
+    <div id="danger-flash"></div>
+    <div id="start-overlay">
+      <div class="cross-icon">&#10013;</div>
+      <h1>CARRY THE<br>CROSS</h1>
+      <div class="sub">A Journey to Golgotha</div>
+      <div class="tap-start">TAP TO BEGIN</div>
+      <div class="instructions">Tap GO as fast as you can<br>to carry the cross to Golgotha.</div>
+    </div>
+  </div>
+
+  <div id="bottom-bar">
+    <div id="streak-text"></div>
+    <div id="timer-bar-wrap"><div id="timer-fill"></div></div>
+    <div id="go-btn" class="hidden">GO</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const goBtn = document.getElementById('go-btn');
+const timerFillEl = document.getElementById('timer-fill');
+const streakTextEl = document.getElementById('streak-text');
+const startOverlay = document.getElementById('start-overlay');
+const faithFill = document.getElementById('faith-fill');
+const zoneLabelEl = document.getElementById('zone-label');
+const progressTextEl = document.getElementById('progress-text');
+const scoreTextEl = document.getElementById('score-text');
+const dangerFlash = document.getElementById('danger-flash');
+const bottomBar = document.getElementById('bottom-bar');
+
+const W = 256;
+const H = 144;
+canvas.width = W; canvas.height = H;
+ctx.imageSmoothingEnabled = false;
+
+const buf = document.createElement('canvas');
+buf.width = W; buf.height = H;
+const bx = buf.getContext('2d');
+bx.imageSmoothingEnabled = false;
+
+// ---- STATE ----
+let state = 'title';
+let distance = 0;
+const GOAL_DISTANCE = 4000;
+let highScore = 0;
+let stamina = 100;
+let missStreak = 0;
+let hitStreak = 0;
+let stumbleTimer = 0;
+let fallenTimer = 0;
+let walkFrame = 0;
+let walkTimer = 0;
+let scrollX = 0;
+let keyTimer = 0;
+let keyTimeLimit = 2.0;
+let flashTimer = 0;
+let flashColor = null;
+let cutsceneTimer = 0;
+let cutscenePhase = 0;
+let endlessMode = false;
+let endlessDistance = 0;
+let particles = [];
+let shakeTimer = 0;
+let shakeIntensity = 0;
+let jesusScreenX = W * 0.55;
+let qteActive = false;
+
+// Crowd people — seeded positions so they tile with scrolling
+const crowdPeople = [];
+for (let i = 0; i < 60; i++) {
+  const seed = i * 2654435761 >>> 0; // hash
+  crowdPeople.push({
+    offset: (seed % 1000) / 1000 * 800, // spread over 800px world width, tiles
+    y: 0,
+    row: i % 2, // 0 = front row (below road), 1 = back row (above road)
+    height: 8 + (seed >> 8) % 5,
+    headColor: ['#d4a870','#c49860','#b08850','#dab880','#a07848'][(seed >> 12) % 5],
+    robeColor: ['#c8b898','#a89878','#b8a070','#988060','#887050','#c0a880','#a09068'][(seed >> 16) % 7],
+    armUp: (seed >> 20) % 4 === 0, // some have arms raised
+  });
+}
+
+// ---- HELPERS ----
+function fillCircle(c,x,y,r){for(let dy=-r;dy<=r;dy++){const dx=Math.floor(Math.sqrt(r*r-dy*dy));c.fillRect(Math.floor(x-dx),Math.floor(y+dy),dx*2,1);}}
+function drawHill(c,x,baseY,width,height){for(let i=0;i<width;i++){const h=Math.sin((i/width)*Math.PI)*height;c.fillRect(x+i,baseY-h,1,h+5);}}
+function drawPixelCross(c,x,y,s){c.fillRect(x-1*s,y-30*s,3*s,40*s);c.fillRect(x-8*s,y-22*s,17*s,3*s);}
+function lerpColor(a,b,t){
+  const ah=parseInt(a.slice(1),16),bh=parseInt(b.slice(1),16);
+  const ar=(ah>>16)&0xff,ag=(ah>>8)&0xff,ab2=ah&0xff;
+  const br=(bh>>16)&0xff,bg=(bh>>8)&0xff,bb=bh&0xff;
+  return`rgb(${Math.round(ar+(br-ar)*t)},${Math.round(ag+(bg-ag)*t)},${Math.round(ab2+(bb-ab2)*t)})`;
+}
+function getZone(){
+  const d=endlessMode?(endlessDistance%GOAL_DISTANCE):distance;
+  const p=Math.min(d/GOAL_DISTANCE,1);
+  if(p<0.25)return'city';if(p<0.55)return'desert';if(p<0.85)return'hillside';return'golgotha';
+}
+
+// ---- BACKGROUND ----
+function drawBackground(){
+  const d=endlessMode?(endlessDistance%GOAL_DISTANCE):distance;
+  const p=Math.min(d/GOAL_DISTANCE,1);
+
+  let skyTop,skyBot;
+  if(p<0.25){skyTop='#6a9fd8';skyBot='#c8dff0';}
+  else if(p<0.55){skyTop='#d4a054';skyBot='#f0d890';}
+  else if(p<0.85){skyTop='#a07040';skyBot='#d0a060';}
+  else{skyTop='#2a1515';skyBot='#5a2020';}
+
+  for(let y=0;y<80;y++){bx.fillStyle=lerpColor(skyTop,skyBot,y/80);bx.fillRect(0,y,W,1);}
+
+  if(p<0.7){bx.fillStyle='#fff8d0';fillCircle(bx,50+p*50,18+p*10,8);bx.fillStyle='#fff4b0';fillCircle(bx,50+p*50,18+p*10,6);}
+
+  const farOff=-scrollX*0.12;
+  bx.fillStyle=p<0.55?'#a08050':'#5a3a20';
+  for(let i=0;i<12;i++){let hx=(i*42+farOff)%(12*42);if(hx<0)hx+=12*42;hx-=42;drawHill(bx,hx,70,38,14);}
+
+  const nearOff=-scrollX*0.25;
+  bx.fillStyle=p<0.55?'#b89840':'#6a4a28';
+  for(let i=0;i<10;i++){let hx=(i*50+nearOff)%(10*50);if(hx<0)hx+=10*50;hx-=50;drawHill(bx,hx,82,28,11);}
+
+  if(p<0.3){
+    const bo=-scrollX*0.35;
+    for(let i=0;i<10;i++){
+      let bxx=(i*48+bo)%(10*48);if(bxx<0)bxx+=10*48;bxx-=48;
+      const bh=8+(i*7)%14;
+      bx.fillStyle='#7a6a50';bx.fillRect(bxx,88-bh,18,bh);
+      bx.fillStyle='#d0c080';
+      for(let wy=88-bh+3;wy<86;wy+=5){bx.fillRect(bxx+2,wy,2,2);bx.fillRect(bxx+8,wy,2,2);bx.fillRect(bxx+13,wy,2,2);}
+    }
+  }
+
+  if(p>0.88&&!endlessMode){bx.fillStyle='#3a2010';const cx=W-30-(1-p)*250;drawPixelCross(bx,cx,52,0.5);drawPixelCross(bx,cx+22,55,0.4);}
+
+  // Ground
+  bx.fillStyle=p<0.55?'#c4a255':'#6a5030';bx.fillRect(0,90,W,54);
+
+  // Road
+  bx.fillStyle=p<0.55?'#b89848':'#5a4228';bx.fillRect(0,100,W,16);
+
+  // Ground details
+  const go=-scrollX*0.7;
+  bx.fillStyle=p<0.55?'#a88838':'#4a3218';
+  for(let i=0;i<25;i++){let sx=(i*31+go)%(25*31);if(sx<0)sx+=25*31;sx=sx%(W+20)-10;bx.fillRect(sx,103+(i%4)*3,2+(i%3),1);}
+
+  // ---- CROWD ----
+  drawCrowd(p);
+}
+
+// ---- CROWD DRAWING ----
+function drawCrowd(p) {
+  const crowdOff = -scrollX * 0.7; // same speed as ground
+  const tileW = 800;
+
+  for (const person of crowdPeople) {
+    let px = (person.offset + crowdOff) % tileW;
+    if (px < 0) px += tileW;
+    px -= 20; // allow offscreen start
+
+    if (px < -10 || px > W + 10) continue;
+
+    const h = person.height;
+    let baseY;
+    if (person.row === 0) {
+      // Front row — below the road (foreground)
+      baseY = 120 + (person.offset % 5);
+    } else {
+      // Back row — above the road (background, behind Jesus path)
+      baseY = 92 + (person.offset % 4);
+    }
+
+    // Body/robe
+    bx.fillStyle = person.robeColor;
+    bx.fillRect(px, baseY - h, 4, h);
+
+    // Head
+    bx.fillStyle = person.headColor;
+    bx.fillRect(px, baseY - h - 3, 4, 3);
+    bx.fillRect(px + 1, baseY - h - 4, 2, 1);
+
+    // Hair/head cover
+    bx.fillStyle = p < 0.55 ? '#5a4020' : '#3a2818';
+    bx.fillRect(px, baseY - h - 4, 4, 1);
+
+    // Arms — some raised
+    if (person.armUp) {
+      bx.fillStyle = person.headColor;
+      bx.fillRect(px - 1, baseY - h - 2, 1, 3);
+      bx.fillRect(px + 4, baseY - h - 1, 1, 2);
+    }
+  }
+}
+
+// ---- JESUS ----
+function drawJesus(x,y){
+  const frame=Math.floor(walkFrame)%4;
+  const isStumbling=state==='stumble';
+  const isFallen=state==='fallen';
+  let lean=0,bodyOffY=0;
+  if(isStumbling){lean=-Math.sin(stumbleTimer*8)*3;bodyOffY=Math.abs(Math.sin(stumbleTimer*6))*2;}
+  if(isFallen){lean=-7;bodyOffY=5;}
+  const jx=Math.floor(x+lean),jy=Math.floor(y+bodyOffY);
+
+  if(isFallen){
+    bx.fillStyle='#e8d8c0';bx.fillRect(jx-2,jy+1,9,7);
+    bx.fillStyle='#d4a870';fillCircle(bx,jx+1,jy-1,3);
+    bx.fillStyle='#6a4020';bx.fillRect(jx-2,jy-4,5,2);bx.fillRect(jx-3,jy-2,2,4);
+    bx.fillStyle='#fff8a0';bx.fillRect(jx-1,jy-6,6,1);
+    bx.fillStyle='#6a4020';bx.fillRect(jx+10,jy+3,16,3);bx.fillRect(jx+13,jy,3,8);
+    return;
+  }
+
+  const legOff=state==='playing'?Math.sin(frame*Math.PI/2)*2:0;
+  bx.fillStyle='rgba(0,0,0,0.2)';bx.fillRect(jx-3,jy+12,11,2);
+  bx.fillStyle='#e8d8c0';bx.fillRect(jx-2,jy-3,8,12);bx.fillRect(jx-3,jy-1,2,7);bx.fillRect(jx+6,jy-1,2,7);
+  bx.fillStyle='#d0c0a0';bx.fillRect(jx+2,jy+1,1,9);
+  bx.fillStyle='#a05030';bx.fillRect(jx-2,jy+3,8,2);
+  bx.fillStyle='#d4a870';bx.fillRect(jx,jy+9,2,3+legOff);bx.fillRect(jx+3,jy+9,2,3-legOff);
+  bx.fillStyle='#6a4020';bx.fillRect(jx-1,jy+12+legOff,4,1);bx.fillRect(jx+2,jy+12-legOff,4,1);
+  bx.fillStyle='#d4a870';fillCircle(bx,jx+2,jy-7,4);
+  bx.fillStyle='#6a4020';bx.fillRect(jx-2,jy-11,7,2);bx.fillRect(jx-3,jy-9,2,5);
+  bx.fillStyle='#7a5030';bx.fillRect(jx+3,jy-5,2,3);
+  bx.fillStyle='#2a1a0a';bx.fillRect(jx+3,jy-8,1,1);bx.fillRect(jx+5,jy-8,1,1);
+  bx.fillStyle='#4a3010';bx.fillRect(jx-3,jy-11,9,1);bx.fillRect(jx-3,jy-12,1,1);bx.fillRect(jx,jy-13,1,1);bx.fillRect(jx+3,jy-13,1,1);bx.fillRect(jx+6,jy-12,1,1);
+  bx.fillStyle='#fff8a0';bx.globalAlpha=0.6+Math.sin(Date.now()/500)*0.2;
+  bx.fillRect(jx-2,jy-15,9,1);bx.fillRect(jx-3,jy-14,1,1);bx.fillRect(jx+7,jy-14,1,1);bx.fillRect(jx-3,jy-13,1,2);bx.fillRect(jx+7,jy-13,1,2);
+  bx.globalAlpha=1;
+
+  const cb=state==='playing'?Math.sin(frame*Math.PI/2)*1:0;
+  bx.fillStyle='#6a4020';bx.fillRect(jx+4,jy-21+cb,3,26);bx.fillRect(jx-3,jy-17+cb,16,3);
+  bx.fillStyle='#5a3010';bx.fillRect(jx+5,jy-19+cb,1,22);
+  bx.fillStyle='#d4a870';bx.fillRect(jx+3,jy-2,2,2);bx.fillRect(jx+6,jy,2,2);
+
+  if(isStumbling){bx.fillStyle='#a02020';bx.fillRect(jx+4,jy-10+Math.floor(stumbleTimer*3)%3,1,1);}
+}
+
+// ---- PARTICLES ----
+function spawnDust(x,y){for(let i=0;i<5;i++)particles.push({x:x+Math.random()*10,y:y+Math.random()*4,vx:(Math.random()-0.5)*20,vy:-Math.random()*15,life:0.5+Math.random()*0.3,maxLife:0.8,color:'#b09040'});}
+function updateParticles(dt){for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=30*dt;p.life-=dt;if(p.life<=0)particles.splice(i,1);}}
+function drawParticles(){for(const p of particles){bx.globalAlpha=Math.max(0,p.life/p.maxLife);bx.fillStyle=p.color;bx.fillRect(Math.floor(p.x),Math.floor(p.y),2,2);}bx.globalAlpha=1;}
+
+// ---- GO BUTTON POSITIONING ----
+function moveGoButton() {
+  const bar = bottomBar;
+  const barW = bar.clientWidth;
+  const barH = bar.clientHeight;
+  const btnSize = 90;
+  const padX = 20;
+  const padTop = 45; // below timer bar
+  const padBot = 20;
+
+  const minX = padX;
+  const maxX = barW - btnSize - padX;
+  const minY = padTop;
+  const maxY = barH - btnSize - padBot;
+
+  const randX = minX + Math.random() * Math.max(0, maxX - minX);
+  const randY = minY + Math.random() * Math.max(0, maxY - minY);
+
+  goBtn.style.left = randX + 'px';
+  goBtn.style.top = randY + 'px';
+  goBtn.style.transform = 'none';
+  goBtn.classList.remove('hit', 'miss', 'hidden');
+}
+
+// ---- QTE ----
+function spawnQTE() {
+  const progress = endlessMode ? Math.min(endlessDistance/3000,1) : Math.min(distance/GOAL_DISTANCE,1);
+  keyTimeLimit = Math.max(0.7, 2.2 - progress * 1.3);
+  if (endlessMode) keyTimeLimit = Math.max(0.4, 1.5 - Math.min(endlessDistance/5000,1) * 1.0);
+
+  keyTimer = keyTimeLimit;
+  qteActive = true;
+  moveGoButton();
+}
+
+function flash(c){flashColor=c;flashTimer=0.15;}
+function shake(i,d){shakeIntensity=i;shakeTimer=d;}
+
+// ---- HUD ----
+function updateHUD(){
+  faithFill.style.width=stamina+'%';
+  faithFill.className='faith-bar-fill'+(stamina>50?'':stamina>25?' mid':' low');
+
+  const labels={city:'JERUSALEM',desert:'VIA DOLOROSA',hillside:'THE ASCENT',golgotha:'GOLGOTHA'};
+  zoneLabelEl.textContent=labels[getZone()]||'';
+
+  if(endlessMode){
+    progressTextEl.style.display='none';scoreTextEl.style.display='inline';
+    scoreTextEl.textContent='SCORE: '+Math.floor(endlessDistance);
+  } else {
+    scoreTextEl.style.display='none';progressTextEl.style.display='inline';
+    progressTextEl.textContent=Math.min(Math.floor(distance/GOAL_DISTANCE*100),100)+'%';
+  }
+
+  if(qteActive){
+    const pct=Math.max(0,(keyTimer/keyTimeLimit)*100);
+    timerFillEl.style.width=pct+'%';
+    timerFillEl.className='timer-fill'+(pct>50?'':pct>30?' warn':' danger');
+  } else {
+    timerFillEl.style.width='0%';
+  }
+
+  if(state==='playing'&&hitStreak>3){streakTextEl.textContent=hitStreak+'x STREAK!';streakTextEl.style.color='#e8c860';}
+  else if(state==='stumble'){streakTextEl.textContent='STUMBLE!';streakTextEl.style.color='#ff6644';}
+  else if(state==='fallen'){streakTextEl.textContent=endlessMode?'FALLEN!':'Gathering strength...';streakTextEl.style.color='#ff4444';}
+  else{streakTextEl.textContent='';}
+
+  if(jesusScreenX<W*0.22&&state==='playing'){
+    const u=1-(jesusScreenX/(W*0.22));
+    dangerFlash.style.opacity=0.3+u*0.5*(Math.sin(Date.now()/100)>0?1:0.3);
+  } else { dangerFlash.style.opacity=0; }
+}
+
+// ---- INPUT ----
+function hitGo() {
+  if (state === 'title') { startGame(); return; }
+  if (state === 'cutscene' && cutscenePhase >= 3) {
+    state='playing';endlessMode=true;endlessDistance=0;stamina=100;missStreak=0;hitStreak=0;jesusScreenX=W*0.55;spawnQTE();return;
+  }
+  if (state === 'gameover') {
+    state='playing';endlessMode=true;endlessDistance=0;stamina=100;missStreak=0;hitStreak=0;jesusScreenX=W*0.55;spawnQTE();return;
+  }
+  if (state === 'playing' && qteActive) {
+    hitStreak++;missStreak=0;
+    stamina=Math.min(100,stamina+3+hitStreak*0.5);
+    jesusScreenX=Math.min(W*0.7,jesusScreenX+12+Math.min(hitStreak*2,18));
+    flash('#44ff4488');
+
+    goBtn.classList.add('hit');
+    setTimeout(()=>goBtn.classList.remove('hit'),100);
+
+    spawnQTE();
+  }
+}
+
+function startGame(){
+  state='playing';distance=0;stamina=100;missStreak=0;hitStreak=0;
+  endlessMode=false;endlessDistance=0;scrollX=0;jesusScreenX=W*0.55;
+  startOverlay.classList.add('hidden');
+  spawnQTE();
+}
+
+// GO button events
+goBtn.addEventListener('touchstart',(e)=>{e.preventDefault();e.stopPropagation();hitGo();},{passive:false});
+goBtn.addEventListener('mousedown',(e)=>{e.preventDefault();hitGo();});
+
+// Keyboard — space or any key acts as GO
+document.addEventListener('keydown',(e)=>{
+  if(e.repeat)return;
+  e.preventDefault();
+  hitGo();
+});
+
+// Touch overlay
+startOverlay.addEventListener('touchstart',(e)=>{e.preventDefault();hitGo();},{passive:false});
+startOverlay.addEventListener('click',()=>hitGo());
+
+// Touch canvas for cutscene/gameover
+canvas.addEventListener('touchstart',(e)=>{e.preventDefault();
+  if(state==='cutscene'&&cutscenePhase>=3)hitGo();
+  if(state==='gameover')hitGo();
+},{passive:false});
+canvas.addEventListener('click',()=>{
+  if(state==='cutscene'&&cutscenePhase>=3)hitGo();
+  if(state==='gameover')hitGo();
+});
+
+// ---- CUTSCENE ----
+function drawCutscene(){
+  bx.fillStyle='#1a0808';bx.fillRect(0,0,W,H);
+  bx.fillStyle='#3a2010';bx.fillRect(0,95,W,49);
+  if(cutscenePhase>=0){bx.fillStyle='#2a1508';drawPixelCross(bx,W/2-40,50,0.7);drawPixelCross(bx,W/2+40,53,0.6);bx.fillStyle='#4a2510';bx.fillRect(W/2-3,25,6,70);bx.fillRect(W/2-16,36,32,5);}
+  if(cutscenePhase>=1){bx.fillStyle='#d4a870';fillCircle(bx,W/2,32,3);bx.fillStyle='#e8d8c0';bx.fillRect(W/2-3,36,6,11);bx.fillStyle='#d4a870';bx.fillRect(W/2-14,38,11,2);bx.fillRect(W/2+3,38,11,2);bx.fillStyle='#4a3010';bx.fillRect(W/2-4,28,8,1);}
+  if(cutscenePhase>=2){bx.globalAlpha=Math.max(0,Math.min((cutsceneTimer-4)/2,1));bx.fillStyle='#e8c860';bx.font='bold 11px monospace';bx.textAlign='center';bx.fillText('"It is finished."',W/2,80);bx.globalAlpha=1;}
+  if(cutscenePhase>=3){bx.globalAlpha=Math.max(0,Math.min((cutsceneTimer-7)/1,1));bx.fillStyle='#888';bx.font='7px monospace';bx.textAlign='center';bx.fillText('TAP for High Score Mode',W/2,108);bx.globalAlpha=1;}
+}
+
+function drawGameOver(){
+  bx.fillStyle='rgba(0,0,0,0.75)';bx.fillRect(0,0,W,H);
+  bx.fillStyle='#e8c860';bx.font='bold 14px monospace';bx.textAlign='center';bx.fillText('FALLEN',W/2,35);
+  bx.fillStyle='#fff';bx.font='bold 10px monospace';bx.fillText('SCORE: '+Math.floor(endlessDistance),W/2,58);
+  if(endlessDistance>=highScore&&highScore>0){bx.fillStyle='#ffdd44';bx.font='bold 8px monospace';bx.fillText('NEW HIGH SCORE!',W/2,72);}
+  bx.fillStyle='#aaa';bx.font='7px monospace';bx.fillText('BEST: '+Math.floor(highScore),W/2,85);
+  if(Math.sin(Date.now()/400)>0){bx.fillStyle='#fff';bx.font='bold 9px monospace';bx.fillText('TAP TO RETRY',W/2,110);}
+}
+
+// ---- UPDATE ----
+function update(dt){
+  if(state==='playing'){
+    walkTimer+=dt;if(walkTimer>0.12){walkFrame++;walkTimer=0;}
+    const baseSpeed=45;scrollX+=baseSpeed*dt;
+    if(endlessMode)endlessDistance+=baseSpeed*dt;else distance+=baseSpeed*dt;
+
+    const timeLeft=keyTimer/keyTimeLimit;
+    const driftSpeed=25+(1-timeLeft)*55;
+    jesusScreenX-=driftSpeed*dt;
+
+    keyTimer-=dt;
+    if(keyTimer<=0 && qteActive){
+      missStreak++;hitStreak=0;stamina-=8+missStreak*4;jesusScreenX-=18;
+      flash('#ff444488');shake(3,0.2);spawnDust(jesusScreenX,105);
+
+      goBtn.classList.add('miss');
+      setTimeout(()=>goBtn.classList.remove('miss'),200);
+
+      if(stamina<=0||jesusScreenX<-10||missStreak>=3){
+        state='fallen';fallenTimer=0;shake(5,0.3);spawnDust(jesusScreenX,105);
+        qteActive=false;goBtn.classList.add('hidden');
+        if(endlessMode){if(endlessDistance>highScore)highScore=endlessDistance;setTimeout(()=>{state='gameover';},1500);}
+      } else {state='stumble';stumbleTimer=0;qteActive=false;goBtn.classList.add('hidden');}
+    }
+
+    if(jesusScreenX<-20){
+      state='fallen';fallenTimer=0;shake(5,0.4);qteActive=false;goBtn.classList.add('hidden');
+      if(endlessMode){if(endlessDistance>highScore)highScore=endlessDistance;setTimeout(()=>{state='gameover';},1500);}
+    }
+    jesusScreenX=Math.min(jesusScreenX,W*0.7);
+
+    if(!endlessMode&&distance>=GOAL_DISTANCE){state='cutscene';cutsceneTimer=0;cutscenePhase=0;qteActive=false;goBtn.classList.add('hidden');}
+  }
+
+  if(state==='stumble'){stumbleTimer+=dt;jesusScreenX-=12*dt;if(stumbleTimer>0.8){state='playing';spawnQTE();}}
+  if(state==='fallen'){fallenTimer+=dt;if(!endlessMode&&fallenTimer>2.0){state='playing';stamina=30;missStreak=0;jesusScreenX=Math.max(jesusScreenX,W*0.28);spawnQTE();}}
+  if(state==='cutscene'){cutsceneTimer+=dt;if(cutsceneTimer>1)cutscenePhase=1;if(cutsceneTimer>2.5)cutscenePhase=2;if(cutsceneTimer>5)cutscenePhase=3;}
+
+  if(flashTimer>0)flashTimer-=dt;
+  if(shakeTimer>0)shakeTimer-=dt;
+  updateParticles(dt);
+  updateHUD();
+}
+
+// ---- RENDER ----
+function render(){
+  bx.clearRect(0,0,W,H);
+
+  if(state==='title'){bx.fillStyle='#0a0a0a';bx.fillRect(0,0,W,H);}
+  else if(state==='cutscene'){drawCutscene();}
+  else if(state==='gameover'){drawBackground();drawJesus(Math.max(5,jesusScreenX),95);drawParticles();drawGameOver();}
+  else{
+    drawBackground();drawJesus(Math.max(-5,jesusScreenX),95);drawParticles();
+    if(state==='stumble'){bx.fillStyle='#ff6644';bx.font='bold 9px monospace';bx.textAlign='center';bx.fillText('STUMBLE!',W/2,45);}
+    if(state==='fallen'){bx.fillStyle='#ff4444';bx.font='bold 12px monospace';bx.textAlign='center';bx.fillText('FALLEN!',W/2,40);if(!endlessMode){bx.fillStyle='#ccc';bx.font='6px monospace';bx.fillText('Gathering strength...',W/2,52);}}
+  }
+
+  if(flashTimer>0&&flashColor){bx.fillStyle=flashColor;bx.globalAlpha=flashTimer/0.15*0.3;bx.fillRect(0,0,W,H);bx.globalAlpha=1;}
+
+  let sx=0,sy=0;
+  if(shakeTimer>0){sx=(Math.random()-0.5)*shakeIntensity*2;sy=(Math.random()-0.5)*shakeIntensity*2;}
+  ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(buf,sx,sy,W,H);
+}
+
+let lastTime=performance.now();
+function loop(now){const dt=Math.min((now-lastTime)/1000,0.05);lastTime=now;update(dt);render();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
