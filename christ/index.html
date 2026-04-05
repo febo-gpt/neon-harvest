@@ -404,8 +404,8 @@ function moveGoButton() {
 // ---- QTE ----
 function spawnQTE() {
   const progress = endlessMode ? Math.min(endlessDistance/3000,1) : Math.min(distance/GOAL_DISTANCE,1);
-  keyTimeLimit = Math.max(0.7, 2.2 - progress * 1.3);
-  if (endlessMode) keyTimeLimit = Math.max(0.4, 1.5 - Math.min(endlessDistance/5000,1) * 1.0);
+  keyTimeLimit = Math.max(1.2, 3.0 - progress * 1.5);
+  if (endlessMode) keyTimeLimit = Math.max(0.6, 2.5 - Math.min(endlessDistance/5000,1) * 1.5);
 
   keyTimer = keyTimeLimit;
   qteActive = true;
@@ -531,12 +531,12 @@ function update(dt){
     if(endlessMode)endlessDistance+=baseSpeed*dt;else distance+=baseSpeed*dt;
 
     const timeLeft=keyTimer/keyTimeLimit;
-    const driftSpeed=25+(1-timeLeft)*55;
+    const driftSpeed=12+(1-timeLeft)*28;
     jesusScreenX-=driftSpeed*dt;
 
     keyTimer-=dt;
     if(keyTimer<=0 && qteActive){
-      missStreak++;hitStreak=0;stamina-=8+missStreak*4;jesusScreenX-=18;
+      missStreak++;hitStreak=0;stamina-=5+missStreak*3;jesusScreenX-=10;
       flash('#ff444488');shake(3,0.2);spawnDust(jesusScreenX,105);
 
       goBtn.classList.add('miss');
@@ -558,7 +558,7 @@ function update(dt){
     if(!endlessMode&&distance>=GOAL_DISTANCE){state='cutscene';cutsceneTimer=0;cutscenePhase=0;qteActive=false;goBtn.classList.add('hidden');}
   }
 
-  if(state==='stumble'){stumbleTimer+=dt;jesusScreenX-=12*dt;if(stumbleTimer>0.8){state='playing';spawnQTE();}}
+  if(state==='stumble'){stumbleTimer+=dt;jesusScreenX-=6*dt;if(stumbleTimer>0.8){state='playing';spawnQTE();}}
   if(state==='fallen'){fallenTimer+=dt;if(!endlessMode&&fallenTimer>2.0){state='playing';stamina=30;missStreak=0;jesusScreenX=Math.max(jesusScreenX,W*0.28);spawnQTE();}}
   if(state==='cutscene'){cutsceneTimer+=dt;if(cutsceneTimer>1)cutscenePhase=1;if(cutsceneTimer>2.5)cutscenePhase=2;if(cutsceneTimer>5)cutscenePhase=3;}
 
